@@ -1,0 +1,43 @@
+{
+	"info": {
+		"_postman_id": "8bf51d15-c1e3-4c5b-bf35-6b0db28a7aa7",
+		"name": "Request Mapper",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "26113096"
+	},
+	"item": [
+		{
+			"name": "map request",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"requestJson\": {\n    \"customer\": {\n      \"displayName\": \"Customer Name\",\n      \"firstName\": \"Customer\",\n      \"lastName\": \"Name\",\n      \"city\": \"Baltimore\",\n      \"region\": \"MD\",\n      \"postalCode\": \"21223\",\n      \"countryCode\": \"US\",\n      \"email\": \"customer.name@gmail.com\",\n      \"phone\": \"+19443159832\",\n      \"address1\": \"101, Haven street\",\n      \"address2\": \"\"\n    }\n  },\n  \"requestMapper\": {\n    \"displayName\": \"customer.displayName\",\n    \"type\": \"\",\n    \"addressLine1\": \"customer.address1\",\n    \"addressLine2\": \"customer.address2\",\n    \"city\": \"customer.city\",\n    \"state\": \"customer.region\",\n    \"country\": \"customer.countryCode\",\n    \"postalCode\": \"customer.postalCode\",\n    \"phoneNumber\": \"customer.phone\",\n    \"email\": \"customer.email\"\n  }\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/api/map-request",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"map-request"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
