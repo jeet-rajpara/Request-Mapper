@@ -21,8 +21,8 @@ func NewRequestMapperController(service service.RequestMapperService) *RequestMa
 
 func (c *RequestMapperController) MapRequest(ctx *gin.Context) {
 	var request struct {
-		RequestJSON map[string]interface{} `json:"requestJson"`
-		RequestMap  map[string]string      `json:"requestMapper"`
+		RequestJSON map[string]any `json:"requestJson"`
+		RequestMap  map[string]any `json:"requestMapper"`
 	}
 
 	if err := ctx.ShouldBindJSON(&request); err != nil {
@@ -30,7 +30,7 @@ func (c *RequestMapperController) MapRequest(ctx *gin.Context) {
 		return
 	}
 
-	result, err := c.service.MapRequest(request.RequestJSON, request.RequestMap)
+	err := c.service.MapRequest(request.RequestJSON, request.RequestMap)
 	if err != nil {
 		// if it's our custom error type
 		if customErr, ok := err.(*er.Error); ok {
@@ -41,5 +41,5 @@ func (c *RequestMapperController) MapRequest(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, result)
+	ctx.JSON(http.StatusOK, request.RequestMap)
 }

@@ -6,7 +6,7 @@ import (
 )
 
 type RequestMapperService interface {
-	MapRequest(inputJSON map[string]interface{}, requestMap map[string]string) (map[string]interface{}, error)
+	MapRequest(inputJSON map[string]any, requestMap map[string]any) error
 }
 
 type requestMapperService struct {
@@ -19,21 +19,21 @@ func NewRequestMapperService(repository repository.RequestMapperRepository) Requ
 	}
 }
 
-func (s *requestMapperService) MapRequest(inputJSON map[string]interface{}, requestMap map[string]string) (map[string]interface{}, error) {
+func (s *requestMapperService) MapRequest(inputJSON map[string]any, requestMap map[string]any) error {
 	// validate input
 	if inputJSON == nil || requestMap == nil {
-		return nil, er.GenerateErrorCodeAndMessage(400, "input JSON or requestMap cannot be nil")
+		return er.GenerateErrorCodeAndMessage(400, "input JSON or requestMap cannot be nil")
 	}
 
 	// validate customer object
-	if customer, ok := inputJSON["customer"].(map[string]interface{}); !ok || len(customer) == 0 {
-		return nil, er.GenerateErrorCodeAndMessage(400, "customer object cannot be empty")
-	}
+	// if customer, ok := inputJSON["customer"].(map[string]any); !ok || len(customer) == 0 {
+	// 	return nil, er.GenerateErrorCodeAndMessage(400, "customer object cannot be empty")
+	// }
 
-	result, err := s.repository.MapRequest(inputJSON, requestMap)
+	err := s.repository.MapRequest(inputJSON, requestMap)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return result, nil
+	return nil
 }

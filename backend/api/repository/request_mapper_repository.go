@@ -1,12 +1,11 @@
 package repository
 
 import (
-	er "request-mapper/error"
 	"strings"
 )
 
 type RequestMapperRepository interface {
-	MapRequest(inputJSON map[string]interface{}, requestMap map[string]string) (map[string]interface{}, error)
+	MapRequest(inputJSON map[string]any, requestMap map[string]any) error
 }
 
 type requestMapperRepository struct{}
@@ -15,29 +14,10 @@ func NewRequestMapperRepository() RequestMapperRepository {
 	return &requestMapperRepository{}
 }
 
-func (r *requestMapperRepository) MapRequest(inputJSON map[string]interface{}, requestMap map[string]string) (map[string]interface{}, error) {
-	result := make(map[string]interface{})
-
-	for requestMapFieldKey, requestMapFieldValue := range requestMap {
-		// if requestMapFieldValue is empty then set empty string value for that key in the result map
-		if requestMapFieldValue == "" {
-			setValueInResponse(result, requestMapFieldKey, "")
-			continue
-		}
-
-		value, err := getValueFromInputJSON(inputJSON, requestMapFieldValue)
-		if err != nil {
-			return nil, err
-		}
-		setValueInResponse(result, requestMapFieldKey, value)
-	}
-
-	return result, nil
-}
-
 // getValueFromInputJSON retrieves a value from the input JSON using a dot-notation path
-func getValueFromInputJSON(inputJSON map[string]interface{}, requestMapFieldValue string) (string, error) {
-	keys := strings.Split(requestMapFieldValue, ".")
+func getValueFromInputJSON(inputJSON map[string]any, requestMapFieldValueString string) (any, error) {
+
+	keys := strings.Split(requestMapFieldValueString, ".")
 
 	current := inputJSON
 
@@ -45,23 +25,19 @@ func getValueFromInputJSON(inputJSON map[string]interface{}, requestMapFieldValu
 		if i == len(keys)-1 {
 			value, exists := current[key]
 			if !exists {
-				return "", er.GenerateErrorCodeAndMessage(400, "requestMapFieldValue not found in inputJSON: "+requestMapFieldValue)
+				return requestMapFieldValueString, nil
 			}
 
 			if value == nil {
 				return "", nil
 			}
 
-			strValue, ok := value.(string)
-			if !ok {
-				return "", er.GenerateErrorCodeAndMessage(400, "value is not a string: "+requestMapFieldValue)
-			}
-			return strValue, nil
+			return value, nil
 		}
 
-		next, ok := current[key].(map[string]interface{})
+		next, ok := current[key].(map[string]any)
 		if !ok {
-			return "", er.GenerateErrorCodeAndMessage(400, "invalid inputJSON")
+			return requestMapFieldValueString, nil
 		}
 		current = next
 	}
@@ -69,7 +45,29 @@ func getValueFromInputJSON(inputJSON map[string]interface{}, requestMapFieldValu
 	return "", nil
 }
 
-// setValueInResponse sets a value in the result map
-func setValueInResponse(result map[string]interface{}, requestMapFieldKey string, value interface{}) {
-	result[requestMapFieldKey] = value
+func (r *requestMapperRepository) MapRequest(inputJSON map[string]any, requestMap map[string]any) error {
+
+	for requestMapFieldKey, requestMapFieldValue := range requestMap {
+
+		requestMapFieldValueString, ok := requestMapFieldValue.(string)
+		if !ok {
+			isMap, ok := requestMapFieldValue.(map[string]any)
+			if ok {
+				err := r.MapRequest(inputJSON, isMap)
+				if err != nil {
+					return err
+				}
+			}
+			continue
+		}
+
+		value, err := getValueFromInputJSON(inputJSON, requestMapFieldValueString)
+		if err != nil {
+			return err
+		}
+
+		requestMap[requestMapFieldKey] = value
+	}
+
+	return nil
 }
